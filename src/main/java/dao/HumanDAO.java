@@ -1,53 +1,45 @@
 package dao;
 
 import model.Human;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Repository
 public class HumanDAO implements GenericDAO <Human, Integer>{
 
-    private SessionFactory sessionFactory;
-
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public void create(Human object) {
-
-        Session session = sessionFactory.getCurrentSession();
-        session.persist(object);
+        entityManager.persist(object);
     }
 
     @Override
     public void update(Human object) {
-
-        Session session = sessionFactory.getCurrentSession();
-        session.update(object);
+        entityManager.refresh(object);
     }
 
     @Override
     public void delete(Integer key) {
 
-        Session session = sessionFactory.getCurrentSession();
-        if(getObjectById(key) != null)session.delete(key);
+        if(getObjectById(key) != null)entityManager.remove(getObjectById(key));
     }
 
+    @Override
     public Human getObjectById(Integer key) {
 
-        Session session = sessionFactory.getCurrentSession();
-        Human object = (Human) session.load(Human.class, key);
+        Human object = entityManager.find(Human.class, key);
         return object;
     }
 
+    @Override
     public List<Human> getAllObjects() {
 
-        Session session = sessionFactory.getCurrentSession();
-        List<Human> objects = session.createQuery("from Humans").list();
+        List<Human> objects = entityManager.createQuery("from Human").getResultList();
         return objects;
     }
 }
